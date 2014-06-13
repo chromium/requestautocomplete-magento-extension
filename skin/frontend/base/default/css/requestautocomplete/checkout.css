@@ -1,0 +1,51 @@
+/* Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. */
+
+#filling-overlay {
+  background: rgba(0, 0, 0, .5);
+  opacity: 1;
+  position: fixed;
+}
+
+#filling-message {
+  background: white;
+  border-radius: 5px;
+  color: black;
+  display: inline-block;
+  font-size: 24px;
+  line-height: 100px;
+  left: 50%;
+  margin: -50px 0 0 -150px;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  width: 300px;
+}
+
+#filling-message::before {
+  content: url(../../images/requestautocomplete/spinner.gif);
+}
+
+.hide-sections .section:not(#opc-login) {
+  display: none;
+}
+
+.rac-flow .section#opc-shipping_method,
+.rac-flow .section#opc-review {
+  display: block;
+}
+
+.rac-flow .step-title .number {
+  display: none;
+}
