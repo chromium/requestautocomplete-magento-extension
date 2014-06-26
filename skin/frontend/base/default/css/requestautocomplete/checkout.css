@@ -16,6 +16,7 @@
   background: rgba(0, 0, 0, .5);
   opacity: 1;
   position: fixed;
+  z-index: 999;
 }
 
 #filling-message {
