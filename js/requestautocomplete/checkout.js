@@ -176,7 +176,7 @@ Support.isMagentoSupported = function() {
 // Overlay
 
 /**
- * An overlay that shows while the MagentoFlow is progressing.
+ * An overlay that shows while a MagentoFlow is progressing.
  * @constructor
  */
 function Overlay() {}
@@ -222,6 +222,9 @@ Overlay.close = function() {
 
 /** @constructor */
 function MagentoFlow() {}
+
+addSingletonGetter(MagentoFlow);
+
 
 /**
  * Selectors of elements that should trigger rAc() when clicked.
@@ -591,6 +594,12 @@ MagentoFlow.prototype.onAutocompleteerror_ = function(e) {
 };
 
 
+/** @return {boolean} Whether the flow is supported. */
+MagentoFlow.prototype.isSupported_ = function() {
+  return Support.isBrowserSupported() && Support.isMagentoSupported();
+};
+
+
 /**
  * Integrates requestAutocomplete into the Magento checkout flow.
  * @return {boolean} Whether the flow is supported on this page.
@@ -619,6 +628,17 @@ MagentoFlow.prototype.disable = function() {
 
   document.removeEventListener('click', onClick, true);
   this.abortFlow_();
+};
+
+
+/** @return {boolean} Whether enabling the flow succeeded. */
+MagentoFlow.enable = function() {
+  return MagentoFlow.getInstance().enable();
+};
+
+
+MagentoFlow.disable = function() {
+  MagentoFlow.getInstance().disable();
 };
 
 
@@ -787,11 +807,19 @@ return {
   },
 
   /**
-   * @return {boolean} Whether the Magento rAc() flow is supported.
-   * @see Support
+   * @return {boolean} Whether the current browser is supported.
+   * @see Support.isBrowserSupported
    */
-  'supported': function() {
-    return Support.isBrowserSupported() && Support.isMagentoSupported();
+  'isBrowserSupported': function() {
+    return Support.isBrowserSupported();
+  },
+
+  /**
+   * @return {boolean} Whether the current Magento environment is supported.
+   * @see Support.isMagentoSupported
+   */
+  'isMagentoSupported': function() {
+    return Support.isMagentoSupported();
   },
 
   /**
