@@ -26,16 +26,6 @@ var $ = function(id) { return document.getElementById(id); };
 
 
 /**
- * @param {*} cond A condition to evaluate for truthiness.
- * @param {string=} opt_message An optional failure message.
- */
-function assert(cond, opt_message) {
-  if (window.RAC_DEBUG && !cond)
-    throw new Error(opt_message || 'Assertion failed');
-}
-
-
-/**
  * Adds a static |getInstance()| method that always returns the same instance.
  * @param {!Function} ctor Class constructor to add |getInstance()| to.
  */
