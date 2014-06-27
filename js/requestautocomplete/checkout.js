@@ -73,7 +73,8 @@ function getResultFromForm(form) {
     else if (!value && type == section + ' family-name')
       value = name[section].slice(-1)[0] || '';
 
-    result[type] = value;
+    if (value)
+      result[type] = value;
   }
 
   return result;
@@ -228,7 +229,7 @@ addSingletonGetter(MagentoFlow);
 
 /**
  * Selectors of elements that should trigger rAc() when clicked.
- * @type {!Array.<{select: string, test: (!Function|undefined)}>}
+ * @type {!Array.<{selector: string, test: (!Function|undefined)}>}
  */
 MagentoFlow.prototype.clickTriggers_ = [
   {
@@ -279,7 +280,7 @@ MagentoFlow.prototype.addedAutocompleteTypes_ = [
   // Certain versions of Chrome only fill whole name whereas Magento asks for
   // first/last name. Split the whole name ourselves if we must.
   'billing name',
-  'shipping name',
+  'shipping name'
 ];
 
 
@@ -356,6 +357,87 @@ MagentoFlow.prototype.paymentFormFields_ = [
 
 
 /**
+ * Integrates requestAutocomplete into the Magento checkout flow.
+ * @return {boolean} Whether the flow is supported on this page.
+ */
+MagentoFlow.prototype.enable = function() {
+  if (!this.isSupported_())
+    return false;
+
+  this.boundOnClick_ = this.onClick_.bind(this);
+  document.addEventListener('click', this.boundOnClick_, true);
+
+  document.body.classList.add('hide-sections');
+  if (this.getCurrentStep_() != 'login')
+    document.body.classList.add('rac-flow');
+
+  return true;
+};
+
+
+/**
+ * Disable the requestAutocomplete enhanced flow the next time a user clicks on
+ * the guest checkout button. Does not cancel running rAc() flows.
+ */
+MagentoFlow.prototype.disable = function() {
+  if (!this.isSupported_())
+    return;
+
+  document.removeEventListener('click', this.boundOnClick_, true);
+  delete this.boundOnClick_;
+
+  this.abortFlow_();
+};
+
+
+/** @param {!Event} e A click event. */
+MagentoFlow.prototype.onClick_ = function(e) {
+  var isTrigger = false;
+  var target = e.target;
+
+  for (var i = 0; i < this.clickTriggers_.length; ++i) {
+    var trigger = this.clickTriggers_[i];
+    var el = document.querySelector(trigger.selector);
+    if (el && el.contains(target) && (!trigger.test || trigger.test(target))) {
+      isTrigger = true;
+      break;
+    }
+  }
+
+  if (!isTrigger) {
+    if ($('onepage-guest-register-button').contains(target))
+      this.abortFlow_();
+    return;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  if ($('shipping-method-buttons-container').contains(target)) {
+    this.startFlow_();
+    return;
+  }
+
+  // Create a form with all the needed fields to only invoke rAc() once.
+  this.racForm_ = document.createElement('form');
+
+  for (var i = 0; i < this.addedAutocompleteTypes_.length; ++i) {
+    var input = document.createElement('input')
+    input.setAttribute('autocomplete', this.addedAutocompleteTypes_[i]);
+    this.racForm_.appendChild(input);
+  }
+
+  this.addFieldsFromSection_(billing);
+  this.addFieldsFromSection_(shipping);
+
+  this.racForm_.onautocomplete = this.onAutocomplete_.bind(this);
+  this.racForm_.onautocompleteerror = this.onAutocompleteerror_.bind(this);
+
+  this.racForm_.requestAutocomplete();
+};
+
+
+/**
  * Shows the normal Magento flow (e.g. the non-rAc() flow).
  */
 MagentoFlow.prototype.abortFlow_ = function() {
@@ -364,7 +446,7 @@ MagentoFlow.prototype.abortFlow_ = function() {
 };
 
 
-/** @return {string} The current checkout step. */
+/** @return {?string} The current checkout step or null if none. */
 MagentoFlow.prototype.getCurrentStep_ = function() {
   // Newer versions of Magento have the current step available as part of the
   // public API. If this is present, use it.
@@ -408,9 +490,11 @@ MagentoFlow.prototype.startFlow_ = function() {
     return;
   }
 
-  var prop = section == shippingMethod || section == payment ? 'onSave' : 'nextStep';
-  var origMethod = section[prop];
-  section[prop] = function(response) {
+  var onSaveSection = section == shippingMethod || section == payment;
+  var methodToReplace = onSaveSection ? 'onSave' : 'nextStep';
+
+  var origMethod = section[methodToReplace];
+  section[methodToReplace] = function(response) {
     var parsed = {};
     try { parsed = JSON.parse(response.responseText); } catch(e) {}
 
@@ -420,10 +504,11 @@ MagentoFlow.prototype.startFlow_ = function() {
     var previousStep = this.getCurrentStep_();
 
     origMethod.apply(section, arguments);
-    section[prop] = origMethod;
+    section[methodToReplace] = origMethod;
 
     var currentStep = this.getCurrentStep_();
-    if (previousStep == currentStep || (currentStep == 'payment' && !fillPaymentForm())) {
+    if (previousStep == currentStep ||
+        (currentStep == 'payment' && !this.fillPaymentForm_())) {
       // There was some kind of error. Revert to the non-rAc() flow.
       this.abortFlow_();
       return;
@@ -475,7 +560,7 @@ MagentoFlow.prototype.fillPaymentForm_ = function() {
         continue;
 
       var type = field.type;
-      var value = result[type];
+      var value = this.result_[type];
 
       if (field.normalizer)
         value = field.normalizer(value);
@@ -492,12 +577,23 @@ MagentoFlow.prototype.fillPaymentForm_ = function() {
   return false;
 }
 
+
+/**
+ * @param {Object} section A Magento section (e.g. shippingMethod).
+ * @return {string} Name of the Magento section.
+ * @private
+ */
+MagentoFlow.prototype.getNameOfSection_ = function(section) {
+  return section.form.replace(/^co-|-form$/g, '');
+};
+
+
 /**
  * @param {Object} section A part of the Magento checkout flow (e.g. shipping).
  * @return {NodeList} A list of fields from |section|.
  */
 MagentoFlow.prototype.getFieldsFromSection_ = function(section) {
-  var name = section.form.replace(/^co-|-form$/g, '');
+  var name = this.getNameOfSection_(section);
   return $(section.form).querySelectorAll('[name^=' + name + '\\[]');
 };
 
@@ -510,17 +606,14 @@ MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
   $(section.form).reset();
 
   var fields = this.getFieldsFromSection_(section);
-  if (!fields.length)
-    return;
-
+  var sectionName = this.getNameOfSection_(section);
   var addressLine = 1;
 
   for (var i = 0; i < fields.length; ++i) {
     var field = fields[i];
-    var name = field.getAttribute('name')
+    var name = field.getAttribute('name').slice((sectionName + '[').length, -']'.length);
 
     var type;
-    var name = name.slice((section + '[').length, -']'.length);
     if (name == 'street][') {
       // Special case street address array input (e.g. section[street][]).
       type = 'address-line' + addressLine;
@@ -531,8 +624,8 @@ MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
     if (!type)
       continue;
 
-    // Prepend 'billing ' or 'shipping ' to the [autocomplete] type.
-    type = section + ' ' + type;
+    // Prepend the section to the type (e.g. 'shipping ' + 'name').
+    type = sectionName + ' ' + type;
 
     var clone = field.cloneNode(true);
     clone.setAttribute('autocomplete', type);
@@ -550,14 +643,14 @@ MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
  * @private
  */
 MagentoFlow.prototype.onAutocomplete_ = function(e) {
-  var result = getResultFromForm(this.racForm_);
+  this.result_ = getResultFromForm(this.racForm_);
 
   for (var i = 0; i < this.racForm_.childNodes.length; ++i) {
     var field = this.racForm_.childNodes[i];
     if (!field.__sourceInput__)
       continue;
 
-    var value = result[field.getAttribute('autocomplete')];
+    var value = this.result_[field.getAttribute('autocomplete')];
     if (value)
       field.__sourceInput__.value = value;
 
@@ -578,7 +671,7 @@ MagentoFlow.prototype.onAutocomplete_ = function(e) {
 
 /**
  * Handles autocompleteerror events (e.g. a failed rAc() run).
- * @type {Event} An autocompleteerror event.
+ * @param {Event} e An autocompleteerror event.
  * @private
  */
 MagentoFlow.prototype.onAutocompleteerror_ = function(e) {
@@ -597,37 +690,6 @@ MagentoFlow.prototype.onAutocompleteerror_ = function(e) {
 /** @return {boolean} Whether the flow is supported. */
 MagentoFlow.prototype.isSupported_ = function() {
   return Support.isBrowserSupported() && Support.isMagentoSupported();
-};
-
-
-/**
- * Integrates requestAutocomplete into the Magento checkout flow.
- * @return {boolean} Whether the flow is supported on this page.
- */
-MagentoFlow.prototype.enable = function() {
-  if (!this.isSupported_())
-    return false;
-
-  document.addEventListener('click', onClick, true);
-
-  document.body.classList.add('hide-sections');
-  if (this.getCurrentStep_() != 'login')
-    document.body.classList.add('rac-flow');
-
-  return true;
-};
-
-
-/**
- * Disable the requestAutocomplete enhanced flow the next time a user clicks on
- * the guest checkout button. Does not cancel running rAc() flows.
- */
-MagentoFlow.prototype.disable = function() {
-  if (!this.isSupported_())
-    return;
-
-  document.removeEventListener('click', onClick, true);
-  this.abortFlow_();
 };
 
 
@@ -771,13 +833,13 @@ CustomFlow.prototype.onAutocomplete_ = function(e) {
 
 
 /** @param {Event} e An autocompleteerror event. */
-CustomFlow.prototype.onAutocompleteError_ = function(e) {
+CustomFlow.prototype.onAutocompleteerror_ = function(e) {
   this.gotResult_(null);
 };
 
 
 /**
- * @param {Object} The result of the run of rAc() or null if it failed.
+ * @param {Object} result The result of the run of rAc() or null if it failed.
  */
 CustomFlow.prototype.gotResult_ = function(result) {
   if (result)
@@ -828,7 +890,7 @@ return {
    */
   'custom': function(opt_options) {
     new CustomFlow(opt_options).run();
-  },
+  }
 };
 
 
