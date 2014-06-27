@@ -837,7 +837,7 @@ CustomFlow.prototype.gotResult_ = function(result) {
   else
     this.failure_();
 
-  this.complete_();
+  this.complete_(result);
 };
 
 
