@@ -34,44 +34,30 @@ function methodsExist(methods) {
 
 
 /**
- * Whether requestAutocomplete is supported by the user agent and whether the
- * current Magento environment is supported.
- * @type {!{browser: boolean, magento: boolean}}
+ * Whether requestAutocomplete is supported by the user agent
  * @const
  */
-var support = {
-  'browser': 'requestAutocomplete' in document.createElement('form'),
-  'magento': methodsExist([
-      'billing.nextStep',
-      'billing.save',
-      'billingRegionUpdater.update',
-      'checkout.setMethod',
-      'payment.onSave',
-      'payment.save',
-      'payment.switchMethod',
-      'shipping.nextStep',
-      'shipping.save',
-      'shippingMethod.onSave',
-      'shippingMethod.save',
-      'shippingRegionUpdater.update'
-  ])
-};
+var browserSupported = 'requestAutocomplete' in document.createElement('form');
 
 
 /**
- * The result of the last run of requestAutocomplete. null when rAc's last run
- * was a failure or it hasn't run at all yet.
- * @type {Object.<string, string>} A map of autocomplete type to values.
+ * Whether the current Magento environment is supported.
+ * @const
  */
-var lastResult = null;
-
-
-/**
- * A form created from multiple sections' fields to enable gathering all the
- * needed info in one call to requestAutocomplete().
- * @type {Element}
- */
-var form = null;
+var magentoSupported = methodsExist([
+  'billing.nextStep',
+  'billing.save',
+  'billingRegionUpdater.update',
+  'checkout.setMethod',
+  'payment.onSave',
+  'payment.save',
+  'payment.switchMethod',
+  'shipping.nextStep',
+  'shipping.save',
+  'shippingMethod.onSave',
+  'shippingMethod.save',
+  'shippingRegionUpdater.update'
+]);
 
 
 /**
@@ -100,6 +86,10 @@ var Overlay = {
       this.overlay_.parentNode.removeChild(this.overlay_);
   }
 };
+
+
+/** Local alias for document.getElementById. */
+var $ = function(id) { return document.getElementById(id); };
 
 
 /** Shows the non-rAc() flow. */
@@ -224,15 +214,15 @@ function fillPaymentForm() {
         continue;
 
       var type = field.type;
-      var result = lastResult[type];
+      var value = result[type];
 
       if (field.normalizer)
-        result = field.normalizer(result);
+        value = field.normalizer(value);
 
       if (field.valueMap)
-        result = field.valueMap[result];
+        value = field.valueMap[value];
 
-      el.value = result || '';
+      el.value = value || '';
     }
 
     return true;
@@ -242,25 +232,11 @@ function fillPaymentForm() {
 }
 
 /**
- * Called on both success and failure to unregister events and remove extra
- * cruft from the DOM.
- * @param {Object} result The results of the last run of requestAutocomplete.
+ * @param {HTMLFormElement} form A form to extract results from.
+ * @return {Object} An object form of the fields in |form|.
  */
-function cleanUp(result) {
-  form.removeEventListener('autocomplete', success);
-  form.removeEventListener('autocompleteerror', failure);
-  form = null;
-  lastResult = result;
-}
-
-
-/**
- * Called when requestAutocomplete succeeds in filling in a form.
- * @param {!Event} e The successful 'autocomplete' event.
- */
-function success(e) {
+function getResultFromForm(form) {
   var name = {'billing': [], 'shipping': []};
-  var shipName = [];
   var result = {};
 
   for (var i = 0; i < form.childNodes.length; ++i) {
@@ -283,55 +259,14 @@ function success(e) {
       value = name[section].slice(-1)[0] || '';
 
     result[type] = value;
-
-    if (field.__originalInput__)
-      field.__originalInput__.value = value;
   }
 
-  cleanUp(result);
-
-  if (support.magento) {
-    checkout.setMethod();
-
-    billingRegionUpdater.update();
-    shippingRegionUpdater.update();
-
-    shipping.setSameAsBilling(false);
-    $('billing:use_for_shipping_yes').checked = false;
-
-    startFlow();
-  }
-}
-
-
-/**
- * Called when requestAutocomplete fails (and an 'autocompleteerror' event is
- * dispatched.
- * @param {!AutocompleteErrorEvent} e The failure event.
- */
-function failure(e) {
-  if (e.reason == 'cancel') {
-    cleanUp(lastResult);  // Don't change the lastResult on cancels.
-    return;
-  }
-
-  showNormalFlow();
-  cleanUp(null);
-
-  // Start the checkout flow (the original click that would've was halted).
-  checkout.setMethod();
+  return result;
 }
 
 
 /** @param {!Event} e A click event. */
 function onClick(e) {
-  if (form) {
-    // rAc() flow is already active.
-    return;
-  }
-
-  var $ = document.getElementById.bind(document);
-
   var triggers = [
     {
       selector: '#onepage-guest-register-button',
@@ -376,7 +311,7 @@ function onClick(e) {
   }
 
   // Create a form with all the needed fields to only invoke rAc() once.
-  form = document.createElement('form');
+  var form = document.createElement('form');
 
   var ccTypes = [
     'cc-csc',
@@ -387,7 +322,7 @@ function onClick(e) {
     'cc-type'
   ];
 
-  // rAc currently requires payment-specific types.
+  // rAc currently requires some payment-specific types.
   for (var i = 0; i < ccTypes.length; ++i) {
     var input = document.createElement('input')
     input.setAttribute('autocomplete', ccTypes[i]);
@@ -450,19 +385,43 @@ function onClick(e) {
       type = section + ' ' + type;
 
       var clone = field.cloneNode(true);
+      clone.__originalInput__ = field;
       clone.setAttribute('autocomplete', type);
       form.appendChild(clone);
-
-      if (support.magento)
-        clone.__originalInput__ = field;
     }
   }
 
   addFields('billing');
   addFields('shipping');
 
-  form.addEventListener('autocomplete', success);
-  form.addEventListener('autocompleteerror', failure);
+  form.onautocompleteerror = function(e) {
+    if (e.reason != 'cancel') {
+      showNormalFlow();
+      // Start the checkout flow (the original click that would've was halted).
+      checkout.setMethod();
+    }
+  };
+
+  form.onautocomplete = function() {
+    var result = getResultFromForm(form);
+
+    for (var i = 0; i < form.childNodes.length; ++i) {
+      var field = form.childNodes[i];
+      var value = result[field.getAttribute('autocomplete')];
+      if (field.__originalInput__ && value)
+        field.__originalInput__.value = value;
+    }
+
+    checkout.setMethod();
+
+    billingRegionUpdater.update();
+    shippingRegionUpdater.update();
+
+    shipping.setSameAsBilling(false);
+    $('billing:use_for_shipping_yes').checked = false;
+
+    startFlow();
+  };
 
   form.requestAutocomplete();
 }
@@ -470,16 +429,19 @@ function onClick(e) {
 
 /** Enables the requestAutocomplete flow on the page. */
 function enable() {
-  if (!support.browser)
+  if (!browserSupported)
     return;
+
+  if (!magentoSupported) {
+    console.info("This version of Magento isn't supported. Use .trigger() instead.");
+    return;
+  }
 
   document.addEventListener('click', onClick, true);
 
-  if (support.magento) {
-    document.body.classList.add('hide-sections');
-    if (getCurrentStep() != 'login')
-      document.body.classList.add('rac-flow');
-  }
+  document.body.classList.add('hide-sections');
+  if (getCurrentStep() != 'login')
+    document.body.classList.add('rac-flow');
 }
 
 
@@ -488,11 +450,100 @@ function enable() {
  * the guest checkout button. Does not cancel running rAc() flows.
  */
 function disable() {
-  if (!support.browser)
+  if (!browserSupported || !magentoSupported)
     return;
 
   document.removeEventListener('click', onClick, true);
   showNormalFlow();
+}
+
+
+/** A way to manually trigger requestAutocomplete() for custom flows. */
+function trigger(options) {
+  options = options || {};
+
+  function runCallbacks(result) {
+    if (result && options.success)
+      options.success(result);
+    else if (!result && options.failure)
+      options.failure(result);
+
+    if (options.complete)
+      options.complete(result);
+  }
+
+  if (!browserSupported) {
+    runCallbacks(null);
+    return;
+  }
+
+  // A random smattering of payment-specific [autocomplete] types.
+  // http://www.whatwg.org/specs/web-apps/current-work/#attr-fe-autocomplete
+  var billingAndShippingTypes = [
+    'name',
+    'given-name',
+    'additional-name',
+    'family-name',
+    'street-address',
+    'address-line1',
+    'address-line2',
+    'address-line3',
+    'address-level1',
+    'address-level2',
+    'address-level3',
+    'address-level4',
+    'country',
+    'country-name',
+    'postal-code',
+    'tel',
+    'tel-country-code',
+    'tel-national',
+    'tel-area-code',
+    'tel-local',
+    'tel-local-prefix',
+    'tel-local-suffix',
+    'tel-extension',
+    'email'
+  ];
+
+  for (var i = 0; i < billingAndShippingTypes.length; ++i) {
+    var type = billingAndShippingTypes[i];
+
+    var billingInput = document.createElement('input');
+    billingInput.autocomplete = 'billing ' + type;
+    form.appendChild(billingInput);
+
+    var shippingInput = document.createElement('input');
+    shippingInput.autocomplete = 'shipping ' + type;
+    form.appendChild(shippingInput);
+  }
+
+  var ccTypes = [
+    'cc-name',
+    'cc-given-name',
+    'cc-additional-name',
+    'cc-family-name',
+    'cc-number',
+    'cc-exp',
+    'cc-exp-month',
+    'cc-exp-year',
+    'cc-csc',
+    'cc-type'
+  ];
+
+  for (var i = 0; i < ccTypes.length; ++i) {
+    var ccInput = document.createElement('input');
+    ccInput.autocomplete = ccTypes[i];
+    form.appendChild(ccInput);
+  }
+
+  var form = document.createElement('form');
+
+  form.onautocomplete = form.onautocompleteerror = function(e) {
+    runCallbacks(e.type == 'autocomplete' ? getResultFromForm(form) : null);
+  };
+
+  form.requestAutocomplete();
 }
 
 
@@ -503,12 +554,9 @@ function disable() {
 window.requestAutocomplete = {
   'disable': disable,
   'enable': enable,
-  'getLastResult': function() { return lastResult; },
-  'support': support,
-  'supported': support.browser && support.magento
+  'supported': browserSupported && magentoSupported,
+  'trigger': trigger
 };
-
-
 }());
 
 
