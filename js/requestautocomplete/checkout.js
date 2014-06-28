@@ -703,28 +703,20 @@ MagentoFlow.disable = function() {
 
 /**
  * A way to manually trigger requestAutocomplete() for custom flows.
- * @param {{onSuccess: (function(Object)|undefined),
- *          onFailure: (Function|undefined),
- *          onComplete: (Function|undefined),
- *          billingOnly: boolean}=} opt_options Flow options.
+ * @param {function(Object)} success Callback for successful rAc() runs.
+ * @param {Function=} opt_failure Callback for rAc() errors.
+ * @param {boolean=} opt_billingOnly Whether to only ask for billing info.
  * @constructor
  */
-function CustomFlow(opt_options) {
-  var options = opt_options || {};
-
-  function noop() {}
+function CustomFlow(success, opt_failure, opt_billingOnly) {
+  /** @private {!Function} */
+  this.success_ = success;
 
   /** @private {!Function} */
-  this.success_ = options['onSuccess'] || noop;
-
-  /** @private {!Function} */
-  this.failure_ = options['onFailure'] || noop;
-
-  /** @private {!Function} */
-  this.complete_ = options['onComplete'] || noop;
+  this.failure_ = opt_failure || function() {};
 
   /** @private {boolean} */
-  this.billingOnly_ = !!options['billingOnly'];
+  this.billingOnly_ = !!opt_billingOnly;
 }
 
 
@@ -785,11 +777,12 @@ CustomFlow.prototype.ccTypes_ = [
 /**
  * Builds a <form> and invokes requestAutocomplete() on it. Results are passed
  * to the callbacks in |this.options_|.
+ * @return {boolean} Whether the flow was run.
  */
 CustomFlow.prototype.run = function() {
   if (!Support.isBrowserSupported()) {
     this.gotResult_(null);
-    return;
+    return false;
   }
 
   this.racForm_ = document.createElement('form');
@@ -818,6 +811,7 @@ CustomFlow.prototype.run = function() {
   this.racForm_.onautocompleteerror = this.onAutocompleteerror_.bind(this);
 
   this.racForm_.requestAutocomplete();
+  return true;
 };
 
 
@@ -841,8 +835,6 @@ CustomFlow.prototype.gotResult_ = function(result) {
     this.success_(result);
   else
     this.failure_();
-
-  this.complete_(result);
 };
 
 
@@ -880,11 +872,14 @@ return {
   },
 
   /**
-   * @param {Object=} opt_options A set of options to initialize a custom flow.
+   * @param {function(Object)} success A success callback. Called with result.
+   * @param {Function=} opt_error An optional error callback.
+   * @param {boolean=} opt_billingOnly Whether to only ask for billing info.
+   * @return {boolean} Whether the custom flow was run.
    * @see CustomFlow
    */
-  'custom': function(opt_options) {
-    new CustomFlow(opt_options).run();
+  'custom': function(success, opt_error, opt_billingOnly) {
+    return new CustomFlow(succcess, opt_error, opt_billingOnly).run();
   }
 };
 
