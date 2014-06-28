@@ -21,7 +21,11 @@ window['requestAutocomplete'] = (function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-/** Local alias for document.getElementById. */
+/**
+ * Local alias for document.getElementById.
+ * @param {string} id An ID to search for.
+ * @return {Element} An element with |id| or null if not found.
+ */
 var $ = function(id) { return document.getElementById(id); };
 
 
@@ -703,6 +707,7 @@ MagentoFlow.disable = function() {
  *          onFailure: (Function|undefined),
  *          onComplete: (Function|undefined),
  *          billingOnly: boolean}=} opt_options Flow options.
+ * @constructor
  */
 function CustomFlow(opt_options) {
   var options = opt_options || {};
