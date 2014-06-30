@@ -9,8 +9,8 @@ your existing Magento installation (just like all other extensions).
 You can do this via these shell commands if you're on a POSIX system:
 
 ```shell
-$ git clone https://github.com/chromium/requestautocomplete-magento-extension.git /tmp/rac-magento-ext/
-$ mv -i /tmp/rac-magento-ext/ $MAGENTO_DIR && rm -rf /tmp/rac-magento-ext/
+git clone https://github.com/chromium/requestautocomplete-magento-extension.git /tmp/rac-magento-ext/
+mv -i /tmp/rac-magento-ext/ $MAGENTO_DIR && rm -rf /tmp/rac-magento-ext/
 ```
 
 This extension may also be available via Magento Connect in the near future.
