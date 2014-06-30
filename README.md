@@ -65,7 +65,7 @@ requestAutocomplete.custom(
 #### *boolean* `requestAutocomplete.enable()`
 
 Integrates `requestAutocomplete()` into the Magento checkout flow if supported.
-Returns a boolean indicating whether the Magento `rAc()` is enabled.
+Returns a boolean indicating whether the Magento `rAc()` flow is now enabled.
 
 --------------------------------------------------------------------------------
 
@@ -74,14 +74,15 @@ Returns a boolean indicating whether the Magento `rAc()` is enabled.
 ##### Parameters
 
 **success**:  *function(Object)*,  Callback for successful `rAc()` runs.
+Receives a result map of autocomplete type => value.
 
-**failure**:  *Function=*,  An optional callback for `rAc()` errors.
+**failure**:  *function(string)=*,  An optional callback for `rAc()` errors.
+Receives a string reason for the failure.
 
 **billingOnly**:  *boolean=*,  Whether to only ask for billing info. Defaults to
 false.
 
 A way to manually trigger `requestAutocomplete()` for custom flows.
-Called with a result map of `{'autocomplete type': 'value'}`.
 
 --------------------------------------------------------------------------------
 

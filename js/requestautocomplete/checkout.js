@@ -704,7 +704,7 @@ MagentoFlow.disable = function() {
 /**
  * A way to manually trigger requestAutocomplete() for custom flows.
  * @param {function(Object)} success Callback for successful rAc() runs.
- * @param {Function=} opt_failure Callback for rAc() errors.
+ * @param {function(string)=} opt_failure Callback for rAc() errors.
  * @param {boolean=} opt_billingOnly Whether to only ask for billing info.
  * @constructor
  */
@@ -889,7 +889,7 @@ return {
    * A way to manually trigger requestAutocomplete() for custom flows.
    * @param {function(Object)} success Callback for successful rAc() runs.
    *     Called with a result map of autocomplete type => value.
-   * @param {Function=} opt_failure Callback for rAc() errors.
+   * @param {function(string)=} opt_failure Callback for rAc() errors.
    * @param {boolean=} opt_billingOnly Whether to only ask for billing info.
    * @see CustomFlow
    */
