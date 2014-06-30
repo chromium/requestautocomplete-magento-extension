@@ -19,31 +19,25 @@ This extension may also be available via Magento Connect in the near future.
 
 #### Integrating into the existing Magento checkout flow
 
-To integrate this extension with your Magento store, you can move the files into
-your current Magento install.  Here's a way to do this from the command line:
-
-This should automatically enable injecting CSS and JavaScript on your checkout flow.
-
-Then, to enable the flow on your page, somewhere in your application JavaScript call:
+To enable the `rAc()` enhanced checkout flow on your store, you need to add this
+JavaScript to your one page checkout:
 
 ```js
 requestAutocomplete.enable();
 ```
 
-Which should automatically integrate `requestAutocomplete()` into your checkout flow.
-If the extension's working, your shipping, billing, and payment checkout steps should be hidden (because `rAc()` gathers this info for you!).
+This should automatically integrate `requestAutocomplete()` into your checkout
+flow. Your shipping, billing, and payment checkout steps should now be hidden
+(because `rAc()` gathers this info for you, showing these steps aren't
+necessary).
 
-When the user selects "Checkout as guest" and clicks "Continue", a native browser UI should show asking for their payment/shipping details.
-
-To disable this flow after already being enabled, simply call:
-
-```js
-requestAutocomplete.disable();
-```
+When the user selects "Checkout as guest" and clicks "Continue", a native
+browser UI should show asking for their payment/shipping details.
 
 #### Creating your own custom `rAc()` flow
 
-If you'd like to trigger `requestAutocomplete()` in a custom way (e.g. not only on guest checkout), you can do something like this:
+If you'd like to trigger `requestAutocomplete()` in a custom way (e.g. not only
+on guest checkout), you can do something like this:
 
 ```js
 requestAutocomplete.custom(
@@ -65,7 +59,6 @@ requestAutocomplete.custom(
     },
     false /* change to true if only billing info is needed */);
 ```
-
 
 ### Docs
 
@@ -91,8 +84,8 @@ Returns a boolean indicating whether the Magento `rAc()` is enabled.
 
 #### `requestAutocomplete.disable()`
 
-Disables the `rAc()` Magento flow and shows all checkout sections. Does not hide
-any currently showing `requestAutocomplete()` UI.
+Disables the `rAc()` Magento flow and unhides all checkout sections. Does not
+hide any currently showing `requestAutocomplete()` UI.
 
 --------------------------------------------------------------------------------
 
