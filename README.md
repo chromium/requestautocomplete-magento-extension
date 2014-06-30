@@ -23,7 +23,7 @@ Returns a boolean indicating whether the Magento `rAc()` is enabled.
 Disables the rAc() Magento flow and shows all checkout sections. Does not hide any currently requestAutocomplete() UI.
 
 
-### *void* `requestAutocomplete.custom(success, opt_failure, opt_billingOnly)`
+### `requestAutocomplete.custom(success, opt_failure, opt_billingOnly)`
 
 #### Parameters
 
