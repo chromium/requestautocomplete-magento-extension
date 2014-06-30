@@ -3,6 +3,8 @@ An extension to integrate `requestAutocomplete()` into Magento's checkout flow!
 
 ### Usage:
 
+#### Integrating into the existing Magento checkout flow
+
 To integrate this extension with your Magento store, you can move the files into
 your current Magento install.  Here's a way to do this from the command line:
 
@@ -30,6 +32,8 @@ To disable this flow after already being enabled, simply call:
 requestAutocomplete.disable();
 ```
 
+#### Creating your own custom `rAc()` flow
+
 If you'd like to trigger `requestAutocomplete()` in a custom way (e.g. not only on guest checkout), you can do something like this:
 
 ```js
@@ -45,7 +49,7 @@ requestAutocomplete.custom(
     },
     function(reason) {
       // Oh no! The user cancelled the requestAutocomplete() UI or it wasn't
-      // shown in the right way.  The reason parameter can be:
+      // shown in the right way. The reason parameter can be:
       //   'cancel' => user cancelled
       //   'disabled' => see the development console for more details
       //   'unsupported' => the current browser doesn't support requestAutocomplete()
