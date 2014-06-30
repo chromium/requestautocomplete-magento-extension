@@ -18,12 +18,13 @@ Whether the current Magento environment supports the `rAc()` enhanced checkout f
 Integrates `requestAutocomplete()` into the Magento checkout flow if supported.
 Returns a boolean indicating whether the Magento `rAc()` is enabled.
 
+
 #### `requestAutocomplete.disable()`
 
 Disables the rAc() Magento flow and shows all checkout sections. Does not hide any currently requestAutocomplete() UI.
 
 
-#### requestAutocomplete.custom(success, failure, billingOnly)
+#### `requestAutocomplete.custom(success, failure, billingOnly)`
 
 ##### Parameters
 
