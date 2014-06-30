@@ -62,30 +62,10 @@ requestAutocomplete.custom(
 
 ### Docs
 
-#### *boolean* `requestAutocomplete.isBrowserSupported()`
-
-Whether the current browser supports `requestAutocomplete()`.
-
---------------------------------------------------------------------------------
-
-#### *boolean* `requestAutocomplete.isMagentoSupported()`
-
-Whether the current Magento environment supports the `rAc()` enhanced checkout
-flow.
-
---------------------------------------------------------------------------------
-
 #### *boolean* `requestAutocomplete.enable()`
 
 Integrates `requestAutocomplete()` into the Magento checkout flow if supported.
 Returns a boolean indicating whether the Magento `rAc()` is enabled.
-
---------------------------------------------------------------------------------
-
-#### `requestAutocomplete.disable()`
-
-Disables the `rAc()` Magento flow and unhides all checkout sections. Does not
-hide any currently showing `requestAutocomplete()` UI.
 
 --------------------------------------------------------------------------------
 
@@ -102,3 +82,23 @@ false.
 
 A way to manually trigger `requestAutocomplete()` for custom flows.
 Called with a result map of `{'autocomplete type': 'value'}`.
+
+--------------------------------------------------------------------------------
+
+#### *boolean* `requestAutocomplete.isBrowserSupported()`
+
+Whether the current browser supports `requestAutocomplete()`.
+
+--------------------------------------------------------------------------------
+
+#### *boolean* `requestAutocomplete.isMagentoSupported()`
+
+Whether the current Magento environment supports the `rAc()` enhanced checkout
+flow.
+
+--------------------------------------------------------------------------------
+
+#### `requestAutocomplete.disable()`
+
+Disables the `rAc()` Magento flow and unhides all checkout sections. Does not
+hide any currently showing `requestAutocomplete()` UI.
