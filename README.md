@@ -1,17 +1,26 @@
-An extension to integrate `requestAutocomplete()` into Magento's checkout flow!
+### What
 
+This is an extension to integrate `requestAutocomplete()` into Magento's
+checkout flow.
 
-### Usage:
+To enable this extension, you must place all the files in this repository into
+your existing Magento installation (just like all other extensions).
 
-#### Integrating into the existing Magento checkout flow
-
-To integrate this extension with your Magento store, you can move the files into
-your current Magento install.  Here's a way to do this from the command line:
+You can do this via these shell commands if you're on a POSIX system:
 
 ```shell
 $ git clone https://github.com/chromium/requestautocomplete-magento-extension.git /tmp/rac-magento-ext/
 $ mv -i /tmp/rac-magento-ext/ $MAGENTO_DIR && rm -rf /tmp/rac-magento-ext/
 ```
+
+This extension may also be available via Magento Connect in the near future.
+
+### How
+
+#### Integrating into the existing Magento checkout flow
+
+To integrate this extension with your Magento store, you can move the files into
+your current Magento install.  Here's a way to do this from the command line:
 
 This should automatically enable injecting CSS and JavaScript on your checkout flow.
 
@@ -58,7 +67,7 @@ requestAutocomplete.custom(
 ```
 
 
-### JavaScript API Docs:
+### Docs
 
 #### *boolean* `requestAutocomplete.isBrowserSupported()`
 
