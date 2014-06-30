@@ -33,27 +33,21 @@ requestAutocomplete.disable();
 If you'd like to trigger `requestAutocomplete()` in a custom way (e.g. not only on guest checkout), you can do something like this:
 
 ```js
-(function() {
-// A sample use of requestAutocomplete.custom().
-
-function success(result) {
-  // yay, the user gave us their payment info in the form of:
-  //   result = {
-  //     'cc-name': 'Big Spenda',
-  //     'billing postal-code': '90210',
-  //     'shipping city': 'Hollywood'
-  //   }
-  //
-}
-
-function error(reason) {
-  // oh no! the user cancelled the requestAutocomplete() UI or it wasn't shown in the right way
-  // (see the development console for more details)
-}
-
-requestAutocomplete.custom(success, error);
-
-}());
+requestAutocomplete.custom(
+    function() {
+      // yay! the user gave us their payment info in the form of:
+      //   result = {
+      //     'cc-name': 'Big Spenda',
+      //     'billing postal-code': '90210',
+      //     'shipping city': 'Hollywood',
+      //     ... and many more ...
+      //   }
+    },
+    function(reason) {
+      // oh no! the user cancelled the requestAutocomplete() UI or it wasn't shown in the right way
+      // (see the development console for more details)
+    },
+    false /* billingOnly */);
 ```
 
 
