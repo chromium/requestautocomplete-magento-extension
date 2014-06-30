@@ -1,0 +1,5 @@
+compiler.jar
+jsdocconf.json
+node_modules/
+out/
+output/
