@@ -34,8 +34,8 @@ If you'd like to trigger `requestAutocomplete()` in a custom way (e.g. not only 
 
 ```js
 requestAutocomplete.custom(
-    function() {
-      // yay! the user gave us their payment info in the form of:
+    function(result) {
+      // Success! The user gave us their payment info in the form of:
       //   result = {
       //     'cc-name': 'Big Spenda',
       //     'billing postal-code': '90210',
@@ -44,10 +44,13 @@ requestAutocomplete.custom(
       //   }
     },
     function(reason) {
-      // oh no! the user cancelled the requestAutocomplete() UI or it wasn't shown in the right way
-      // (see the development console for more details)
+      // Oh no! The user cancelled the requestAutocomplete() UI or it wasn't
+      // shown in the right way.  The reason parameter can be:
+      //   'cancel' => user cancelled
+      //   'disabled' => see the development console for more details
+      //   'unsupported' => the current browser doesn't support requestAutocomplete()
     },
-    false /* billingOnly */);
+    false /* change to true if only billing info is needed */);
 ```
 
 

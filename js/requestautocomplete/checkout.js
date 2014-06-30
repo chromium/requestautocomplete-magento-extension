@@ -790,7 +790,7 @@ CustomFlow.prototype.ccTypes_ = [
  */
 CustomFlow.prototype.run = function() {
   if (!Support.isBrowserSupported()) {
-    this.gotResult_(null);
+    this.gotResult_('unsupported');
     return false;
   }
 
@@ -832,7 +832,7 @@ CustomFlow.prototype.onAutocomplete_ = function(e) {
 
 /** @param {Event} e An autocompleteerror event. */
 CustomFlow.prototype.onAutocompleteerror_ = function(e) {
-  this.gotResult_(null);
+  this.gotResult_(e.reason);
 };
 
 
