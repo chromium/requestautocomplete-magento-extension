@@ -370,8 +370,8 @@ MagentoFlow.prototype.enable = function() {
 
 
 /**
- * Disable the requestAutocomplete enhanced flow the next time a user clicks on
- * the guest checkout button. Does not cancel running rAc() flows.
+ * Disable the rAc() Magento flow and reshow checkout sections. Does not hide
+ * rAc() UI if already showing.
  */
 MagentoFlow.prototype.disable = function() {
   if (!this.isSupported_())
@@ -709,13 +709,22 @@ MagentoFlow.disable = function() {
  * @constructor
  */
 function CustomFlow(success, opt_failure, opt_billingOnly) {
-  /** @private {!Function} */
+  /**
+   * @type {!Function}
+   * @private
+   */
   this.success_ = success;
 
-  /** @private {!Function} */
+  /**
+   * @type {!Function}
+   * @private
+   */
   this.failure_ = opt_failure || function() {};
 
-  /** @private {boolean} */
+  /**
+   * @type {boolean}
+   * @private
+   */
   this.billingOnly_ = !!opt_billingOnly;
 }
 
@@ -842,12 +851,17 @@ CustomFlow.prototype.gotResult_ = function(result) {
  * The public API. Keys are 'quoted' to remain unchanged if closure compiled.
  */
 return {
-  /** @see MagentoFlow.disable */
+  /**
+   * Disable the rAc() Magento flow and reshow checkout sections. Does not hide
+   * rAc() UI if already showing.
+   * @see MagentoFlow.disable
+   */
   'disable': function() {
     MagentoFlow.disable();
   },
 
   /**
+   * Integrates requestAutocomplete into the Magento checkout flow.
    * @return {boolean} Whether enabling the Magento rAc() flow succeeded.
    * @see MagentoFlow.enable
    */
@@ -872,10 +886,12 @@ return {
   },
 
   /**
-   * @param {function(Object)} success A success callback. Called with result.
-   * @param {Function=} opt_error An optional error callback.
+   * A way to manually trigger requestAutocomplete() for custom flows.
+   * @param {function(Object)} success Callback for successful rAc() runs.
+   * @param {Function=} opt_failure Callback for rAc() errors.
    * @param {boolean=} opt_billingOnly Whether to only ask for billing info.
-   * @return {boolean} Whether the custom flow was run.
+   * @return {Object.<string>} The result of the rAc() run in the form of
+   *     autocomplete type => value. Returns null on failure.
    * @see CustomFlow
    */
   'custom': function(success, opt_error, opt_billingOnly) {
