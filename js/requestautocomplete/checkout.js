@@ -786,12 +786,11 @@ CustomFlow.prototype.ccTypes_ = [
 /**
  * Builds a <form> and invokes requestAutocomplete() on it. Results are passed
  * to the callbacks in |this.options_|.
- * @return {boolean} Whether the flow was run.
  */
 CustomFlow.prototype.run = function() {
   if (!Support.isBrowserSupported()) {
     this.gotResult_('unsupported');
-    return false;
+    return;
   }
 
   this.racForm_ = document.createElement('form');
@@ -820,7 +819,6 @@ CustomFlow.prototype.run = function() {
   this.racForm_.onautocompleteerror = this.onAutocompleteerror_.bind(this);
 
   this.racForm_.requestAutocomplete();
-  return true;
 };
 
 
@@ -894,7 +892,7 @@ return {
    * @see CustomFlow
    */
   'custom': function(success, opt_error, opt_billingOnly) {
-    return new CustomFlow(succcess, opt_error, opt_billingOnly).run();
+    new CustomFlow(succcess, opt_error, opt_billingOnly).run();
   }
 };
 
