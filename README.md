@@ -1,6 +1,6 @@
 ### What
 
-This is an extension to integrate `requestAutocomplete()` into Magento's
+This is an extension to integrate [`requestAutocomplete()`](https://developer.chrome.com/multidevice/requestautocomplete-faq) into Magento's
 checkout flow.
 
 To enable this extension, you must place all the files in this repository into
