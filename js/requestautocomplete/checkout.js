@@ -65,7 +65,7 @@ function getResultFromForm(form) {
     else if (!value && type == section + ' given-name')
       value = name[section][0] || '';
     else if (!value && type == section + ' family-name')
-      value = name[section].slice(-1)[0] || '';
+      value = name[section].slice(1).join(' ');
 
     if (value)
       result[type] = value;
