@@ -91,7 +91,7 @@ addSingletonGetter(Support);
 
 
 /**
- * Whether the current Magento environment is supported.
+ * Required Magento API globals required for a MagentoFlow to work.
  * @const
  */
 Support.prototype.requiredMagentoMethods_ = [
@@ -233,6 +233,9 @@ MagentoFlow.prototype.clickTriggers_ = [
       return guest && guest.checked;
     }
   },
+
+  // If requestAutocomplete returns invalid info, run it again when the user
+  // clicks "Change" in section summaries so it'll be right the next time.
   {
     selector: '#billing-progress-opcheckout .changelink a'
   },
@@ -242,6 +245,8 @@ MagentoFlow.prototype.clickTriggers_ = [
   {
     selector: '#payment-progress-opcheckout .changelink a'
   },
+
+  // These steps are usually hidden but site author might override this.
   {
     selector: '#opc-billing.allow .step-title'
   },
@@ -251,6 +256,7 @@ MagentoFlow.prototype.clickTriggers_ = [
   {
     selector: '#opc-payment.allow .step-title'
   },
+
   {
     selector: '#shipping-method-buttons-container button'
   }
@@ -339,7 +345,7 @@ MagentoFlow.prototype.paymentFormFields_ = [
     idSuffix: 'expiration',
     type: 'cc-exp-month',
     normalizer: function(val) {
-      // Normalizes number-like month values (e.g. '1', '01', ' 1' => '1').
+      // Normalizes number-like month values (e.g., '1', '01', ' 1' => '1').
       return parseInt(val, 10);
     }
   },
@@ -432,7 +438,7 @@ MagentoFlow.prototype.onClick_ = function(e) {
 
 
 /**
- * Shows the normal Magento flow (e.g. the non-rAc() flow).
+ * Shows the normal Magento flow (e.g., the non-rAc() flow).
  */
 MagentoFlow.prototype.abortFlow_ = function() {
   document.body.classList.remove('rac-flow', 'hide-sections');
@@ -573,7 +579,7 @@ MagentoFlow.prototype.fillPaymentForm_ = function() {
 
 
 /**
- * @param {Object} section A Magento section (e.g. shippingMethod).
+ * @param {Object} section A Magento section (e.g., shippingMethod).
  * @return {string} Name of the Magento section.
  * @private
  */
@@ -583,7 +589,7 @@ MagentoFlow.prototype.getNameOfSection_ = function(section) {
 
 
 /**
- * @param {Object} section A part of the Magento checkout flow (e.g. shipping).
+ * @param {Object} section A part of the Magento checkout flow (e.g., shipping).
  * @return {NodeList} A list of fields from |section|.
  */
 MagentoFlow.prototype.getFieldsFromSection_ = function(section) {
@@ -594,7 +600,7 @@ MagentoFlow.prototype.getFieldsFromSection_ = function(section) {
 
 /**
  * Adds form fields from |section| into |form| so they can be filled.
- * @param {Object} section The section of the checkout flow (e.g. shipping).
+ * @param {Object} section The section of the checkout flow (e.g., shipping).
  */
 MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
   $(section.form).reset();
@@ -605,11 +611,12 @@ MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
 
   for (var i = 0; i < fields.length; ++i) {
     var field = fields[i];
+    // Parse PHP $_POST inputs (e.g., <input name="billing[name]"> -> "name").
     var name = field.getAttribute('name').slice((sectionName + '[').length, -']'.length);
 
     var type;
     if (name == 'street][') {
-      // Special case street address array input (e.g. section[street][]).
+      // Special case street address array input (e.g., section[street][]).
       type = 'address-line' + addressLine;
       addressLine++;
     } else {
@@ -618,7 +625,7 @@ MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
     if (!type)
       continue;
 
-    // Prepend the section to the type (e.g. 'shipping ' + 'name').
+    // Prepend the section to the type (e.g., 'shipping ' + 'name').
     type = sectionName + ' ' + type;
 
     var clone = field.cloneNode(true);
@@ -633,7 +640,7 @@ MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
 
 
 /**
- * Handles autocomplete events (e.g. successfully rAc() runs).
+ * Handles autocomplete events (e.g., successfully rAc() runs).
  * @private
  */
 MagentoFlow.prototype.onAutocomplete_ = function(e) {
@@ -664,7 +671,7 @@ MagentoFlow.prototype.onAutocomplete_ = function(e) {
 
 
 /**
- * Handles autocompleteerror events (e.g. a failed rAc() run).
+ * Handles autocompleteerror events (e.g., a failed rAc() run).
  * @param {Event} e An autocompleteerror event.
  * @private
  */
@@ -891,8 +898,8 @@ return {
    * @param {boolean=} opt_billingOnly Whether to only ask for billing info.
    * @see CustomFlow
    */
-  'custom': function(success, opt_error, opt_billingOnly) {
-    new CustomFlow(succcess, opt_error, opt_billingOnly).run();
+  'run': function(success, opt_error, opt_billingOnly) {
+    new CustomFlow(success, opt_error, opt_billingOnly).run();
   }
 };
 
