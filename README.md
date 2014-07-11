@@ -38,24 +38,31 @@ from the cart page when the user presses "Checkout Now"). The code might look
 like this:
 
 ```js
-requestAutocomplete.run(
-    function(result) {
-      // Success! The user gave us their payment info in the form of:
-      //   result = {
-      //     'cc-name': 'Big Spenda',
-      //     'billing postal-code': '90210',
-      //     'shipping city': 'Hollywood',
-      //     ... and many more ...
-      //   }
-    },
-    function(reason) {
-      // Oh no! The user cancelled the requestAutocomplete UI or it wasn't
-      // shown in the right way. The reason parameter can be:
-      //   'cancel' => user cancelled
-      //   'disabled' => see the development console for more details
-      //   'unsupported' => the current browser doesn't support requestAutocomplete
-    },
-    false /* change to true if only billing info is needed */);
+function success(result) {
+  // Success! The user gave us their payment info in the form of:
+  //   result = {
+  //     'cc-name': 'Big Spenda',
+  //     'billing postal-code': '90210',
+  //     'shipping city': 'Hollywood',
+  //     ... and many more ...
+  //   }
+}
+
+function failure(reason) {
+  // Oh no! The user cancelled the requestAutocomplete UI or it wasn't
+  // shown in the right way. The reason parameter can be:
+  //   'cancel' => user cancelled
+  //   'disabled' => see the development console for more details
+  //   'unsupported' => the current browser doesn't support requestAutocomplete
+}
+
+var types = [
+  'cc-csc',
+  'cc-name',
+  'cc-number'
+];
+
+requestAutocomplete.run(success, failure, types);
 ```
 
 ### Docs
