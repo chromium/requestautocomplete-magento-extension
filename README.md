@@ -73,8 +73,6 @@ user's browser doesn't have `requestAutocomplete`.
 
 A way to manually trigger `requestAutocomplete` for customized checkout flows.
 
-##### Parameters
-
 Parameter|Type|Description
 ---------|----|-----------
 **success**|*function(Object)*|Callback for successful `requestAutocomplete` runs. Receives a result map of autocomplete type => value.
