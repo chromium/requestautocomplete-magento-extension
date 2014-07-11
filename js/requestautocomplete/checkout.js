@@ -610,11 +610,13 @@ MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
 
   for (var i = 0; i < fields.length; ++i) {
     var field = fields[i];
+
     // Parse PHP $_POST inputs (e.g., <input name="billing[name]"> -> "name").
-    var name = field.getAttribute('name').slice((sectionName + '[').length, -']'.length);
+    var name = field.getAttribute('name');
+    name = name.slice(name.indexOf('[') + 1, name.indexOf(']'));
 
     var type;
-    if (name == 'street][') {
+    if (name == 'street') {
       // Special case street address array input (e.g., section[street][]).
       type = 'address-line' + addressLine;
       addressLine++;
