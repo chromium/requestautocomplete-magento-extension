@@ -602,12 +602,14 @@ MagentoFlow.prototype.getFieldsFromSection_ = function(section) {
  * @param {Object} section The section of the checkout flow (e.g., shipping).
  */
 MagentoFlow.prototype.addFieldsFromSection_ = function(section) {
+  var sectionName = this.getNameOfSection_(section);
+  if (!(sectionName == 'billing' || sectionName == 'shipping'))
+    return;
+
+  var addressLine = 1;
   $(section.form).reset();
 
   var fields = this.getFieldsFromSection_(section);
-  var sectionName = this.getNameOfSection_(section);
-  var addressLine = 1;
-
   for (var i = 0; i < fields.length; ++i) {
     var field = fields[i];
 
