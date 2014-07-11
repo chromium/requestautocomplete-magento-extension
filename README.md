@@ -69,20 +69,17 @@ user's browser doesn't have `requestAutocomplete`.
 
 --------------------------------------------------------------------------------
 
-#### `requestAutocomplete.run(success, failure, billingOnly)`
+#### `requestAutocomplete.run(success, failure, types)`
+
+A way to manually trigger `requestAutocomplete` for customized checkout flows.
 
 ##### Parameters
 
-**success**: *function(Object)*, Callback for successful `requestAutocomplete`
-runs. Receives a result map of autocomplete type => value.
-
-**failure**: *function(string)=*, An optional callback for
-requestAutocomplete` errors.  Receives a string reason for the failure.
-
-**billingOnly**: *boolean=*, Whether to only ask for billing info. Defaults to
-false.
-
-A way to manually trigger `requestAutocomplete` for customized checkout flows.
+Parameter|Type|Description
+---------|----|-----------
+**success**|*function(Object)*|Callback for successful `requestAutocomplete` runs. Receives a result map of autocomplete type => value.
+**failure**|*function(string)*|An optional callback for requestAutocomplete` errors. Receives a string reason for the failure (e.g., "cancel").
+**types**|*!Array.<string>*|A list of [autocomplete] types to request.
 
 --------------------------------------------------------------------------------
 
