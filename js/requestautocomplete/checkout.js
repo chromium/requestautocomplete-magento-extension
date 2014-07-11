@@ -67,8 +67,7 @@ function getResultFromForm(form) {
     else if (!value && type == section + ' family-name')
       value = name[section].slice(1).join(' ');
 
-    if (value)
-      result[type] = value;
+    result[type] = value;
   }
 
   return result;
@@ -711,11 +710,10 @@ MagentoFlow.disable = function() {
 /**
  * A way to manually trigger requestAutocomplete() for custom flows.
  * @param {function(Object)} success Callback for successful rAc() runs.
- * @param {function(string)=} opt_failure Callback for rAc() errors.
- * @param {boolean=} opt_billingOnly Whether to only ask for billing info.
+ * @param {function(string)} failure Callback for rAc() errors.
  * @constructor
  */
-function CustomFlow(success, opt_failure, opt_billingOnly) {
+function CustomFlow(success, failure) {
   /**
    * @type {!Function}
    * @private
@@ -726,75 +724,16 @@ function CustomFlow(success, opt_failure, opt_billingOnly) {
    * @type {!Function}
    * @private
    */
-  this.failure_ = opt_failure || function() {};
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.billingOnly_ = !!opt_billingOnly;
+  this.failure_ = failure;
 }
-
-
-/**
- * A random smattering of payment-specific [autocomplete] types.
- * http://www.whatwg.org/specs/web-apps/current-work/#attr-fe-autocomplete
- * @private
- * @const
- */
-CustomFlow.prototype.billingAndShippingTypes_ = [
-  'name',
-  'given-name',
-  'additional-name',
-  'family-name',
-  'street-address',
-  'address-line1',
-  'address-line2',
-  'address-line3',
-  'address-level1',
-  'address-level2',
-  'address-level3',
-  'address-level4',
-  'country',
-  'country-name',
-  'postal-code',
-  'tel',
-  'tel-country-code',
-  'tel-national',
-  'tel-area-code',
-  'tel-local',
-  'tel-local-prefix',
-  'tel-local-suffix',
-  'tel-extension',
-  'email'
-];
-
-
-/**
- * All the cc-* [autocomplete] types currently in the spec.
- * http://www.whatwg.org/specs/web-apps/current-work/#attr-fe-autocomplete
- * @private
- * @const
- */
-CustomFlow.prototype.ccTypes_ = [
-  'cc-name',
-  'cc-given-name',
-  'cc-additional-name',
-  'cc-family-name',
-  'cc-number',
-  'cc-exp',
-  'cc-exp-month',
-  'cc-exp-year',
-  'cc-csc',
-  'cc-type'
-];
 
 
 /**
  * Builds a <form> and invokes requestAutocomplete() on it. Results are passed
  * to the callbacks in |this.options_|.
+ * @param {!Array.<string>} types A list of [autocomplete] types to request.
  */
-CustomFlow.prototype.run = function() {
+CustomFlow.prototype.run = function(types) {
   if (!Support.isBrowserSupported()) {
     this.gotResult_('unsupported');
     return;
@@ -802,24 +741,10 @@ CustomFlow.prototype.run = function() {
 
   this.racForm_ = document.createElement('form');
 
-  for (var i = 0; i < this.billingAndShippingTypes_.length; ++i) {
-    var type = this.billingAndShippingTypes_[i];
-
-    var billingInput = document.createElement('input');
-    billingInput.autocomplete = 'billing ' + type;
-    this.racForm_.appendChild(billingInput);
-
-    if (!this.billingOnly_) {
-      var shippingInput = document.createElement('input');
-      shippingInput.autocomplete = 'shipping ' + type;
-      this.racForm_.appendChild(shippingInput);
-    }
-  }
-
-  for (var i = 0; i < this.ccTypes_.length; ++i) {
-    var ccInput = document.createElement('input');
-    ccInput.autocomplete = this.ccTypes_[i];
-    this.racForm_.appendChild(ccInput);
+  for (var i = 0; i < types.length; ++i) {
+    var input = document.createElement('input');
+    input.autocomplete = types[i];
+    this.racForm_.appendChild(input);
   }
 
   this.racForm_.onautocomplete = this.onAutocomplete_.bind(this);
@@ -831,24 +756,22 @@ CustomFlow.prototype.run = function() {
 
 /** @param {Event} e An autocomplete event. */
 CustomFlow.prototype.onAutocomplete_ = function(e) {
-  this.gotResult_(getResultFromForm(this.racForm_));
+  this.gotResult_(true, getResultFromForm(this.racForm_));
 };
 
 
 /** @param {Event} e An autocompleteerror event. */
 CustomFlow.prototype.onAutocompleteerror_ = function(e) {
-  this.gotResult_(e.reason);
+  this.gotResult_(false, e.reason);
 };
 
 
 /**
- * @param {Object} result The result of the run of rAc() or null if it failed.
+ * @param {boolean} success Whether rAc() ran successfully.
+ * @param {Object} result The result to return to the callback.
  */
-CustomFlow.prototype.gotResult_ = function(result) {
-  if (result)
-    this.success_(result);
-  else
-    this.failure_();
+CustomFlow.prototype.gotResult_ = function(success, result) {
+  (success ? this.success_ : this.failure_)(result);
 };
 
 
@@ -894,12 +817,12 @@ return {
    * A way to manually trigger requestAutocomplete() for custom flows.
    * @param {function(Object)} success Callback for successful rAc() runs.
    *     Called with a result map of autocomplete type => value.
-   * @param {function(string)=} opt_failure Callback for rAc() errors.
-   * @param {boolean=} opt_billingOnly Whether to only ask for billing info.
+   * @param {function(string)} failure Callback for rAc() errors.
+   * @param {!Array.<string>} types A list of [autocomplete] types to request.
    * @see CustomFlow
    */
-  'run': function(success, opt_error, opt_billingOnly) {
-    new CustomFlow(success, opt_error, opt_billingOnly).run();
+  'run': function(success, failure, types) {
+    new CustomFlow(success, failure).run(types);
   }
 };
 
