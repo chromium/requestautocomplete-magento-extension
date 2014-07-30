@@ -404,7 +404,8 @@ MagentoFlow.prototype.onClick_ = function(e) {
   }
 
   if (!isTrigger) {
-    if ($('onepage-guest-register-button').contains(target))
+    var registerButton = $('onepage-guest-register-button');
+    if (registerButton && registerButton.contains(target))
       this.abortFlow_();
     return;
   }
@@ -412,7 +413,8 @@ MagentoFlow.prototype.onClick_ = function(e) {
   e.preventDefault();
   e.stopPropagation();
 
-  if ($('shipping-method-buttons-container').contains(target)) {
+  var shippingMethodContainer = $('shipping-method-buttons-container');
+  if (shippingMethodContainer && shippingMethodContainer.contains(target)) {
     this.startFlow_();
     return;
   }
@@ -667,7 +669,7 @@ MagentoFlow.prototype.onAutocomplete_ = function(e) {
   shippingRegionUpdater.update();
 
   shipping.setSameAsBilling(false);
-  $('billing:use_for_shipping_yes').checked = false;
+  ($('billing:use_for_shipping_yes') || {}).checked = false;
 
   this.startFlow_();
 };
