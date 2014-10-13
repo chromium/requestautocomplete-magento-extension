@@ -79,90 +79,48 @@ function getResultFromForm(form) {
 
 /**
  * A helper to determine whether a browser or Magento environment is supported.
- * @constructor
  */
-function Support() {
-  this.isBrowserSupported_ = this.isRequestAutocompletePresent_();
-  this.isMagentoSupported_ = this.areRequiredMagentoMethodsPresent_();
-}
+var Support = {
+  /**
+   * Required Magento API globals required for a MagentoFlow to work.
+   * @private
+   * @const
+   */
+  requiredMagentoMethods_: [
+    'billing.nextStep',
+    'billing.save',
+    'billingRegionUpdater.update',
+    'checkout.setMethod',
+    'payment.onSave',
+    'payment.save',
+    'payment.switchMethod',
+    'shipping.nextStep',
+    'shipping.save',
+    'shippingMethod.onSave',
+    'shippingMethod.save',
+    'shippingRegionUpdater.update',
+    'Validation'
+  ],
 
-addSingletonGetter(Support);
+  /**
+   * @return {boolean} Whether the current Magento environment is supported.
+   */
+  isMagentoSupported: function() {
+    for (var i = 0; i < this.requiredMagentoMethods_.length; ++i) {
+      var props = this.requiredMagentoMethods_[i].split('.');
+      var global = window[props[0]];
+      if (!global || (props[1] && !global[props[1]]))
+        return false;
+    }
+    return true;
+  },
 
-
-/**
- * Required Magento API globals required for a MagentoFlow to work.
- * @const
- */
-Support.prototype.requiredMagentoMethods_ = [
-  'billing.nextStep',
-  'billing.save',
-  'billingRegionUpdater.update',
-  'checkout.setMethod',
-  'payment.onSave',
-  'payment.save',
-  'payment.switchMethod',
-  'shipping.nextStep',
-  'shipping.save',
-  'shippingMethod.onSave',
-  'shippingMethod.save',
-  'shippingRegionUpdater.update',
-  'Validation'
-];
-
-
-/**
- * @return {boolean} Whether all of |this.requiredMagentoMethods_| exist.
- * @private
- */
-Support.prototype.areRequiredMagentoMethodsPresent_ = function() {
-  for (var i = 0; i < this.requiredMagentoMethods_.length; ++i) {
-    var props = this.requiredMagentoMethods_[i].split('.');
-    var global = window[props[0]];
-    if (!global || (props[1] && !global[props[1]]))
-      return false;
+  /**
+   * @return {boolean} Whether the current browser is supported.
+   */
+  isBrowserSupported: function() {
+    return 'requestAutocomplete' in document.createElement('form');
   }
-  return true;
-};
-
-
-/**
- * @return {boolean} Whether requestAutocomplete is supported by the browser.
- * @const
- */
-Support.prototype.isRequestAutocompletePresent_ = function() {
-  return 'requestAutocomplete' in document.createElement('form');
-};
-
-
-/**
- * @return {boolean} Whether the current browser is supported.
- */
-Support.prototype.isBrowserSupported = function() {
-  return this.isBrowserSupported_;
-};
-
-
-/**
- * @return {boolean} Whether the current Magento environment is supported.
- */
-Support.prototype.isMagentoSupported = function() {
-  return this.isMagentoSupported_;
-};
-
-
-/**
- * @return {boolean} Whether the current browser is supported.
- */
-Support.isBrowserSupported = function() {
-  return Support.getInstance().isBrowserSupported();
-};
-
-
-/**
- * @return {boolean} Whether the current Magento environment is supported.
- */
-Support.isMagentoSupported = function() {
-  return Support.getInstance().isMagentoSupported();
 };
 
 
@@ -693,7 +651,10 @@ MagentoFlow.prototype.onAutocompleteerror_ = function(e) {
 };
 
 
-/** @return {boolean} Whether the flow is supported. */
+/**
+ * @return {boolean} Whether the flow is supported.
+ * @private
+ */
 MagentoFlow.prototype.isSupported_ = function() {
   return Support.isBrowserSupported() && Support.isMagentoSupported();
 };
