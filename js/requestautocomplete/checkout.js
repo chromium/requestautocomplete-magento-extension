@@ -741,7 +741,7 @@ function CustomFlow(success, failure) {
  */
 CustomFlow.prototype.run = function(types) {
   if (!Support.isBrowserSupported()) {
-    this.gotResult_('unsupported');
+    this.gotResult_(false, 'unsupported');
     return;
   }
 
