@@ -221,12 +221,20 @@ addSingletonGetter(MagentoFlow);
 
 
 /**
+ * CSS selector of potential register buttons (i.e. where the flow starts).
+ * @const
+ */
+var REGISTER_SELECTOR = '#onepage-guest-register-button, ' +
+                        '#checkout-step-login .col-1 button';
+
+
+/**
  * Selectors of elements that should trigger rAc() when clicked.
  * @type {!Array.<{selector: string, test: (!Function|undefined)}>}
  */
 MagentoFlow.prototype.clickTriggers_ = [
   {
-    selector: '#onepage-guest-register-button',
+    selector: REGISTER_SELECTOR,
     test: function() {
       var guest = $('login:guest');
       return guest && guest.checked;
@@ -404,7 +412,7 @@ MagentoFlow.prototype.onClick_ = function(e) {
   }
 
   if (!isTrigger) {
-    var registerButton = $('onepage-guest-register-button');
+    var registerButton = document.querySelector(REGISTER_SELECTOR);
     if (registerButton && registerButton.contains(target))
       this.abortFlow_();
     return;
