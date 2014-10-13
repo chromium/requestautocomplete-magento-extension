@@ -307,6 +307,7 @@ MagentoFlow.prototype.billingAndShippingNameTypeMap_ = {
  * @const
  */
 MagentoFlow.prototype.paymentMethods_ = [
+  'authnetcim',
   'authorizenet',
   'ccsave'
 ];
