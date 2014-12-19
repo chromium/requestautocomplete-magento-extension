@@ -6,7 +6,9 @@ checkout flow.
 To enable this extension, copy all directories into the root of your Magento
 installation.
 
-You can do this via these shell commands if you're on a POSIX system:
+You can install with [`modman`](https://github.com/colinmollenhour/modman).  
+
+Alternatively, you can do this via these shell commands if you're on a POSIX system:
 
 ```shell
 git clone https://github.com/chromium/requestautocomplete-magento-extension.git /tmp/rac-magento-ext/
