@@ -1,0 +1,6 @@
+app/code/community/Checkout/RequestAutocomplete app/code/community/Checkout/RequestAutocomplete
+app/design/frontend/base/default/layout/requestautocomplete.xml app/design/frontend/base/default/layout/requestautocomplete.xml
+app/etc/modules/Checkout_RequestAutocomplete.xml app/etc/modules/Checkout_RequestAutocomplete.xml
+js/requestautocomplete js/requestautocomplete
+skin/frontend/base/default/css/requestautocomplete skin/frontend/base/default/css/requestautocomplete
+skin/frontend/base/default/images/requestautocomplete skin/frontend/base/default/images/requestautocomplete
